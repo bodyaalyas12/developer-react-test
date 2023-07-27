@@ -1,45 +1,59 @@
-import React from "react";
-import {
-  Box,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from "@mui/material";
+import React, { useMemo } from "react";
+import { Box } from "@mui/material";
 import { HeatmapProps } from "./Heatmap.props";
+import "handsontable/dist/handsontable.full.min.css";
+import { HotTable } from "@handsontable/react";
+import { registerAllModules } from "handsontable/registry";
+import { registerRenderer, textRenderer } from "handsontable/renderers";
+import { BaseRenderer } from "handsontable/renderers/base";
+import chroma from "chroma-js";
+import { getMax, getMin } from "../../utils/minMax";
+
+registerAllModules();
 
 export const HandsontableWidget = (props: HeatmapProps) => {
   const { tableData, tableHeaders } = props;
 
-  const showColHeader = (item: string) => {
-    return <TableCell>{item}</TableCell>;
-  };
+  const { min, max } = useMemo(() => {
+    const numbers = tableData
+      .flat()
+      .filter((item) => typeof item === "number") as number[];
+    return { min: getMin(numbers), max: getMax(numbers) };
+  }, [tableData]);
 
-  const showColHeaders = () => {
-    return (
-      <TableRow>{tableHeaders.map((header) => showColHeader(header))}</TableRow>
-    );
-  };
+  const scale = chroma.scale("RdYlBu").domain([max, min]);
 
-  const showRowItem = (item: Array<string | number>) => {
-    return item.map((x) => <TableCell>{x}</TableCell>);
+  const heatMapRenderer: BaseRenderer = function (
+    instance,
+    td,
+    row,
+    col,
+    prop,
+    value,
+    cellProperties,
+  ) {
+    textRenderer(instance, td, row, col, prop, value, cellProperties);
+    if (typeof value !== "number") {
+      return;
+    }
+    const color = scale(value as number);
+    td.style.background = color.hex();
   };
-
-  const showRowData = () => {
-    return tableData.map((x) => <TableRow>{showRowItem(x)}</TableRow>);
-  };
+  registerRenderer("heatMapRenderer", heatMapRenderer);
 
   return (
-    <Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>{showColHeaders()}</TableHead>
-          <TableBody>{showRowData()}</TableBody>
-        </Table>
-      </TableContainer>
+    <Box display={"flex"}>
+      <HotTable
+        data={[tableHeaders, ...tableData]}
+        licenseKey="non-commercial-and-evaluation"
+        cells={(row, col, prop) => {
+          const cellProperties: any = {};
+          if (row !== 0 && col !== 0) {
+            cellProperties.renderer = "heatMapRenderer";
+          }
+          return cellProperties;
+        }}
+      />
     </Box>
   );
 };
