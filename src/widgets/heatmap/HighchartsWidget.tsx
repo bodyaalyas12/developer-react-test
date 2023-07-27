@@ -19,7 +19,7 @@ export const HighchartsWidget = (props: HeatmapProps) => {
     });
     return arr;
   }, [tableData]);
-  console.log(Highcharts?.getOptions());
+
   return (
     <Box id={"highChartsHeatMapContainer"}>
       <HighchartsReact

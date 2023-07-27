@@ -48,6 +48,7 @@ function App() {
                 backgroundColor:
                   selectedSource === "versions" ? "secondary.dark" : undefined,
               }}
+              variant={"contained"}
               size="small"
               onClick={() => changeSourceClickHandler("versions")}
             >
@@ -59,6 +60,7 @@ function App() {
                   selectedSource === "products" ? "secondary.dark" : undefined,
                 margin: "0 15px",
               }}
+              variant={"contained"}
               size="small"
               onClick={() => changeSourceClickHandler("products")}
             >
@@ -69,6 +71,7 @@ function App() {
                 backgroundColor:
                   selectedSource === "regions" ? "secondary.dark" : undefined,
               }}
+              variant={"contained"}
               size="small"
               onClick={() => changeSourceClickHandler("regions")}
             >
